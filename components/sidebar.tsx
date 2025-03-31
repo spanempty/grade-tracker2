@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Bot, Home } from "lucide-react";
+import ThemeSwitch from "./ThemeSwitch";
 
 const item = [
   {
@@ -12,7 +13,7 @@ const item = [
   },
   {
     title: "   AI   ",
-    url: "/",
+    url: "/ai",
     icon: <Bot />,
   },
 ];
@@ -24,7 +25,7 @@ function MenuItem({ title, icon, url }: any) {
     <button
       type="button"
       onClick={() => router.push(url)}
-      className="flex flex-row justify-center items-center w-full p-4 text-sm rounded-xl bg-neutral-800 hover:bg-neutral-700 "
+      className="flex flex-row justify-center items-center w-full p-4 text-sm rounded-xl bg-neutral-400 hover:bg-[#7a7a7a]  dark:bg-neutral-800 dark:hover:bg-neutral-700 "
     >
       {icon}  {title}
     </button>
@@ -32,14 +33,30 @@ function MenuItem({ title, icon, url }: any) {
 }
 
 function Sidebar() {
+  function stringToBoolean(str: any) {
+    return str === "true";
+  }
+
+  function booleanToString(bool: boolean) {
+    return bool.toString();
+  }
   const [isOpened, setIsOpened] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem("sidebar") !== null) {
+      setIsOpened(stringToBoolean(localStorage.getItem("sidebar")));
+    } else {
+      localStorage.setItem("sidebar", "false");
+    }
+  }, []);
 
   return (
     <>
       {/* ***************** the top right button************  */}
       <button
         onClick={() => {
-          setIsOpened((current) => !current);
+          localStorage.setItem("sidebar", booleanToString(!isOpened));
+          setIsOpened(() => stringToBoolean(localStorage.getItem("sidebar")));
           console.log(isOpened);
         }}
         className={`
@@ -47,15 +64,22 @@ function Sidebar() {
             isOpened ? "left-2/12" : "lef-0"
           }`}
       >
-        {isOpened ? <ArrowLeft /> : <ArrowRight />}
+        {isOpened ? (
+          <ArrowLeft className="dark:stroke-white stroke-neutral-800" />
+        ) : (
+          <ArrowRight className="dark:stroke-white stroke-neutral-800" />
+        )}
       </button>
       {/* ************************************************* */}
       <div
-        className={`grid grid-rows-[auto_50px] absolute overflow-hidden min-h-screen rounded-r-xl bg-neutral-900 opacity-70 transition-all ${
-          isOpened ? "w-2/12  " : "w-0"
+        className={`grid grid-rows-[auto_50px] absolute overflow-hidden min-h-screen rounded-r-xl bg-neutral-200 dark:bg-neutral-900 opacity-70 transition-all ${
+          isOpened ? "w-2/12" : "w-0"
         }`}
       >
-        <div className="flex flex-col p-3 pt-6 gap-2">
+        <div
+          className={`flex flex-col p-3 pt-6 gap-2
+        ${isOpened ? "" : "left-[-calc(2/12 * 100%)]"}`}
+        >
           {item.map((item, index) => (
             <MenuItem
               title={item.title}
@@ -65,7 +89,17 @@ function Sidebar() {
             />
           ))}
         </div>
-        <div className="p-5 bg-orange-500">bottom</div>
+        <div className="p-5">
+          <button
+            onClick={() => {
+              document.querySelectorAll("div").forEach((element) => {
+                element.classList.add("light");
+              });
+            }}
+          >
+            <ThemeSwitch />
+          </button>
+        </div>
       </div>
     </>
   );
